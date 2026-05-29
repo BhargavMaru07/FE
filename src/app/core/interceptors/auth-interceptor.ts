@@ -10,6 +10,7 @@ const PUBLIC_URLS = [
   '/auth/refresh-token',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/auth/logout',
 ];
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {

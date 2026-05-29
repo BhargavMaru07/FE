@@ -112,7 +112,7 @@ export class AuthService {
   }
 
   refreshToken(): Observable<ApiResponse<AuthResponse>> {
-    return this.http.post<ApiResponse<AuthResponse>>(`${this.baseUrl}/auth/refresh-token`,{})
+    return this.http.post<ApiResponse<AuthResponse>>(`${this.baseUrl}/auth/refresh-token`, {})
       .pipe(
         tap((res) => {
           if (res.isSuccess && res.data?.accessToken) {
@@ -123,21 +123,29 @@ export class AuthService {
   }
 
   logout(): Observable<ApiResponse<string>> {
-    this.accessToken.set(null);
-    return this.http.post<ApiResponse<string>>(`${this.baseUrl}/auth/logout`,{});
+    return this.http.post<ApiResponse<string>>(`${this.baseUrl}/auth/logout`, {});
   }
 
   logoutAndRedirect(): void {
     this.logout().subscribe({
-      complete: () => this.router.navigate(['/auth/login']),
-      error: () => this.router.navigate(['/auth/login']),
+      next: (res) => {
+        if (res.isSuccess) {
+          this.accessToken.set(null);
+          this.router.navigate(['/auth/login']);
+        }
+      },
+      error: () => {
+
+      }
     });
   }
 
   getDashboardRoute(): string {
+    console.log('User role:', this.role());
+    
     switch (this.role()) {
-      case 'Admin':
-        return '/admin/dashboard';
+      case 'Administrator':
+        return '/success';
       case 'WarehouseManager':
         return '/manager/dashboard';
       case 'StockKeeper':

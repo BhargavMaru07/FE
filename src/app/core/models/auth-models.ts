@@ -33,7 +33,7 @@ export interface LoginRequest {
     aud: string;
   }
   
-  export type UserRole = 'Admin' | 'WarehouseManager' | 'StockKeeper';
+  export type UserRole = 'Administrator' | 'WarehouseManager' | 'StockKeeper';
   
   export interface AuthUser {
     id: string;

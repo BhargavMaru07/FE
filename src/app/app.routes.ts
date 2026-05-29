@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
-import { guestGuard } from './core/guards/auth-guard';
+import { authGuard, guestGuard } from './core/guards/auth-guard';
 import { LoginComponent } from './features/auth/login/login';
+import { Success } from './features/auth/success/success';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,12 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
     ],
+  },
+
+  {
+    path: 'success',
+    canActivate : [authGuard],
+    component: Success
   },
 
   {

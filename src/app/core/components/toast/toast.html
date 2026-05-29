@@ -1,0 +1,39 @@
+<div class="toast-container" aria-live="polite" aria-atomic="false">
+    @for (toast of toastService.toasts(); track trackById($index, toast)) {
+      <div
+        class="toast-item toast-{{ toast.type }}"
+        [class.toast-leaving]="isLeaving(toast.id)"
+        role="alert"
+      >
+        <!-- Left accent bar -->
+        <div class="toast-bar"></div>
+  
+        <!-- Icon -->
+        <div class="toast-icon">
+          <i class="bi {{ iconFor(toast.type) }}"></i>
+        </div>
+  
+        <!-- Content -->
+        <div class="toast-content">
+          <span class="toast-label">{{ labelFor(toast.type) }}</span>
+          <span class="toast-message">{{ toast.message }}</span>
+        </div>
+  
+        <!-- Close button -->
+        <button
+          class="toast-close"
+          (click)="dismiss(toast)"
+          aria-label="Dismiss"
+          type="button"
+        >
+          <i class="bi bi-x"></i>
+        </button>
+  
+        <!-- Progress bar -->
+        <div
+          class="toast-progress"
+          [style.animation-duration.ms]="toast.duration"
+        ></div>
+      </div>
+    }
+  </div>
