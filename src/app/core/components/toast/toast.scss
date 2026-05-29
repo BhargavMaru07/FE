@@ -1,144 +1,119 @@
-// ── Token map ─────────────────────────────────────────────────────────────────
-$toast-types: (
-  success: (
-    bar:   #16a34a,
-    icon:  #16a34a,
-    bg:    #f0fdf4,
-    border:#bbf7d0,
-  ),
-  error: (
-    bar:   #dc2626,
-    icon:  #dc2626,
-    bg:    #fef2f2,
-    border:#fecaca,
-  ),
-  warning: (
-    bar:   #d97706,
-    icon:  #d97706,
-    bg:    #fffbeb,
-    border:#fde68a,
-  ),
-  info: (
-    bar:   #2563eb,
-    icon:  #2563eb,
-    bg:    #eff6ff,
-    border:#bfdbfe,
-  ),
+$types: (
+  success: #16a34a,
+  error: #dc2626,
+  warning: #d97706,
+  info: #2563eb,
 );
 
-// ── Container ─────────────────────────────────────────────────────────────────
 .toast-container {
   position: fixed;
-  bottom: 24px;
+  bottom: 28px;
   right: 24px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 10px;
   pointer-events: none;
-  width: 340px;
 
   @media (max-width: 480px) {
-    width: calc(100vw - 32px);
-    right: 16px;
+    right: 12px;
     bottom: 16px;
+    left: 12px;
+    align-items: stretch;
   }
 }
 
-// ── Toast item base ───────────────────────────────────────────────────────────
 .toast-item {
   pointer-events: all;
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 14px 14px 14px 0;
-  border-radius: 10px;
-  border: 1px solid transparent;
+  padding: 12px 14px 16px 14px;
+  border-radius: 12px;
+  width: 340px;
   overflow: hidden;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.07),
-    0 2px 4px -2px rgba(0, 0, 0, 0.05);
 
-  // Enter animation
-  animation: toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.10),
+    0 1px 4px rgba(0, 0, 0, 0.06);
+
+  animation: toast-in 0.28s cubic-bezier(0.34, 1.46, 0.64, 1) both;
 
   &.toast-leaving {
-    animation: toast-out 0.26s ease-in both;
+    animation: toast-out 0.22s ease-in both;
   }
 
-  // Generate type-specific styles from map
-  @each $type, $tokens in $toast-types {
-    &.toast-#{$type} {
-      background: map-get($tokens, bg);
-      border-color: map-get($tokens, border);
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+}
 
-      .toast-bar {
-        background: map-get($tokens, bar);
-      }
+.toast-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-      .toast-icon i {
-        color: map-get($tokens, icon);
-      }
+  i {
+    font-size: 18px;
+    line-height: 1;
+  }
+}
 
-      .toast-progress {
-        background: map-get($tokens, bar);
+@each $type, $color in $types {
+  .toast-#{$type} {
+    .toast-icon {
+      background: rgba($color, 0.10);
+
+      i {
+        color: $color;
       }
+    }
+
+    .toast-label {
+      color: $color;
+    }
+
+    .toast-progress {
+      background: $color;
     }
   }
 }
 
-// ── Left accent bar ───────────────────────────────────────────────────────────
-.toast-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  border-radius: 10px 0 0 10px;
-  flex-shrink: 0;
-}
-
-// ── Icon ──────────────────────────────────────────────────────────────────────
-.toast-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-left: 14px;
-  margin-top: 1px;
-
-  i {
-    font-size: 17px;
-  }
-}
-
-// ── Content ───────────────────────────────────────────────────────────────────
 .toast-content {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 
 .toast-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: #0f172a;
-  line-height: 1.3;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .toast-message {
   font-size: 13px;
-  color: #475569;
-  line-height: 1.4;
+  font-weight: 400;
+  color: #334155;
+  line-height: 1.45;
   word-break: break-word;
 }
 
-// ── Close button ──────────────────────────────────────────────────────────────
 .toast-close {
   flex-shrink: 0;
+  align-self: flex-start;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,61 +125,62 @@ $toast-types: (
   cursor: pointer;
   color: #94a3b8;
   padding: 0;
-  margin-top: 1px;
   transition: background 0.15s, color 0.15s;
 
   i {
-    font-size: 16px;
-    line-height: 1;
+    font-size: 12px;
   }
 
   &:hover {
-    background: rgba(0, 0, 0, 0.06);
+    background: #f1f5f9;
     color: #475569;
   }
 }
 
-// ── Progress bar ──────────────────────────────────────────────────────────────
 .toast-progress {
   position: absolute;
   bottom: 0;
   left: 0;
   height: 3px;
   width: 100%;
-  opacity: 0.45;
+  border-radius: 0 0 12px 12px;
+  opacity: 0.8;
   transform-origin: left;
   animation: toast-progress linear both;
-  // duration is bound via [style.animation-duration.ms] in the template
 }
 
-// ── Keyframes ─────────────────────────────────────────────────────────────────
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateX(100%) scale(0.95);
+    transform: translateY(14px) scale(0.96);
   }
+
   to {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes toast-out {
   from {
     opacity: 1;
-    transform: translateX(0) scale(1);
-    max-height: 120px;
-    margin-bottom: 0;
+    transform: translateY(0) scale(1);
+    max-height: 100px;
   }
+
   to {
     opacity: 0;
-    transform: translateX(60%) scale(0.96);
+    transform: translateY(8px) scale(0.95);
     max-height: 0;
-    margin-bottom: -10px;
   }
 }
 
 @keyframes toast-progress {
-  from { transform: scaleX(1); }
-  to   { transform: scaleX(0); }
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
 }

@@ -14,8 +14,6 @@ export class ToastService {
   readonly toasts = signal<Toast[]>([]);
   private nextId = 0;
 
-  // ── Public API ─────────────────────────────────────────────────────────────
-
   success(message: string, duration = 4000): void {
     this.add({ type: 'success', message, duration });
   }
@@ -35,8 +33,6 @@ export class ToastService {
   dismiss(id: number): void {
     this.toasts.update((list) => list.filter((t) => t.id !== id));
   }
-
-  // ── Internal ───────────────────────────────────────────────────────────────
 
   private add(toast: Omit<Toast, 'id'>): void {
     const id = ++this.nextId;

@@ -145,7 +145,7 @@ export class AuthService {
     
     switch (this.role()) {
       case 'Administrator':
-        return '/success';
+        return '/admin/users';
       case 'WarehouseManager':
         return '/manager/dashboard';
       case 'StockKeeper':

@@ -1,0 +1,38 @@
+<header class="app-header">
+
+  <div class="header-left">
+    <button mat-icon-button class="toggle-btn" (click)="toggleSidebar.emit()" aria-label="Toggle sidebar">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="brand-text">WIMS</span>
+  </div>
+
+  <div class="header-right">
+
+    <button mat-icon-button class="icon-action" aria-label="Notifications">
+      <mat-icon [matBadge]="'3'" matBadgeColor="warn" matBadgeSize="small">notifications_none</mat-icon>
+    </button>
+
+    <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
+      <div class="user-avatar">{{ initials }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ user?.name }}</span>
+        <span class="user-role">{{ user?.role }}</span>
+      </div>
+      <mat-icon class="chevron">expand_more</mat-icon>
+    </button>
+
+    <mat-menu #userMenu="matMenu" class="user-dropdown">
+      <button mat-menu-item (click)="navigateToProfile()">
+        <mat-icon>person_outline</mat-icon>
+        My Profile
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item class="logout-item" (click)="onLogout()">
+        <mat-icon>logout</mat-icon>
+        Sign Out
+      </button>
+    </mat-menu>
+
+  </div>
+</header>
