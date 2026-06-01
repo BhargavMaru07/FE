@@ -42,3 +42,21 @@ export interface LoginRequest {
     role: UserRole;
     warehouseId?: number;
   }
+
+  export interface UserProfileResponse {
+    id: number;
+    fullName: string;
+    email: string;
+    phoneNumber: string | null;
+    role: string;
+    status: string;
+    warehouseId: number | null;
+    warehouseName: string | null;
+    lastLoginAt: string | null;
+    createdAt: string;
+  }
+  
+  export interface UpdateProfileRequest {
+    fullName: string;
+    phoneNumber: string | null;
+  }

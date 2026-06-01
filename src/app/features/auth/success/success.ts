@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AuthService } from '../../../core/services/auth-service';
 
 @Component({
   selector: 'app-success',
@@ -7,5 +8,10 @@ import { Component } from '@angular/core';
   styleUrl: './success.scss',
 })
 export class Success {
+  private readonly authService = inject(AuthService);
 
+
+  logout(): void {
+    this.authService.logoutAndRedirect();
+  }
 }

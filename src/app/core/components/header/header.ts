@@ -1,24 +1,18 @@
 import { Component, inject, input, output } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatBadgeModule } from '@angular/material/badge';
-import { AuthService } from '../../services/auth-service';
-import { MatDividerModule } from '@angular/material/divider';
 
+import { AuthService } from '../../services/auth-service';
+import { DropdownComponent, DropdownItem } from '../../../shared/components/dropdown/dropdown';
+import { NotificationDropdownComponent, NotificationItem } from '../../../shared/components/notification-dropdown/notification-dropdown';
 
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [
     CommonModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatBadgeModule,
-    MatDividerModule
+    DropdownComponent,
+    NotificationDropdownComponent,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -35,8 +29,7 @@ export class HeaderComponent {
   }
 
   get initials(): string {
-    const name = this.user?.name ?? '';
-    return name
+    return (this.user?.name ?? '')
       .split(' ')
       .map((n) => n[0])
       .slice(0, 2)
@@ -53,11 +46,41 @@ export class HeaderComponent {
     }
   }
 
-  navigateToProfile(): void {
-    this.router.navigateByUrl(this.profileRoute);
+  get profileItems(): DropdownItem[] {
+    return [
+      {
+        label: 'My Profile',
+        icon: 'bi-person',
+        action: () => this.router.navigateByUrl(this.profileRoute),
+      },
+      {
+        label: 'Sign Out',
+        icon: 'bi-box-arrow-right',
+        danger: true,
+        dividerBefore: true,
+        action: () => this.authService.logoutAndRedirect(),
+      },
+    ];
   }
 
-  onLogout(): void {
-    this.authService.logoutAndRedirect();
-  }
+  readonly notifications: NotificationItem[] = [
+    {
+      id: 1,
+      title: 'Low stock alert: SKU-1001',
+      description: 'Current quantity: 15 units',
+      read: false,
+    },
+    {
+      id: 2,
+      title: 'PO-2024-001 approved',
+      description: 'Purchase order ready for processing',
+      read: false,
+    },
+    {
+      id: 3,
+      title: 'Stock transfer completed',
+      description: '50 items moved to Regional Hub',
+      read: true,
+    },
+  ];
 }

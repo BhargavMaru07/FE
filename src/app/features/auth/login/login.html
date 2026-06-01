@@ -70,7 +70,7 @@
           mat-flat-button
           class="submit-btn w-100"
           type="submit"
-          [disabled]="loading()"
+          [disabled]="loading() || form.invalid"
         >
           @if (loading()) {
             <mat-spinner diameter="20" />

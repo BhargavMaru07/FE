@@ -1,38 +1,27 @@
-<header class="app-header">
+<header class="app-header d-flex align-items-center justify-content-between px-3">
 
-  <div class="header-left">
-    <button mat-icon-button class="toggle-btn" (click)="toggleSidebar.emit()" aria-label="Toggle sidebar">
-      <mat-icon>menu</mat-icon>
+  <div class="d-flex align-items-center gap-2">
+    <button class="toggle-btn d-flex align-items-center justify-content-center" (click)="toggleSidebar.emit()"
+      aria-label="Toggle sidebar">
+      <i class="bi bi-list fs-5"></i>
     </button>
     <span class="brand-text">WIMS</span>
   </div>
 
-  <div class="header-right">
-
-    <button mat-icon-button class="icon-action" aria-label="Notifications">
-      <mat-icon [matBadge]="'3'" matBadgeColor="warn" matBadgeSize="small">notifications_none</mat-icon>
-    </button>
-
-    <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
-      <div class="user-avatar">{{ initials }}</div>
-      <div class="user-info">
-        <span class="user-name">{{ user?.name }}</span>
-        <span class="user-role">{{ user?.role }}</span>
+  <div class="d-flex align-items-center gap-2">
+    <app-notification-dropdown [notifications]="notifications" />
+    <app-dropdown title="My Account" [items]="profileItems" align="right">
+      <div class="user-trigger d-flex align-items-center gap-2 px-2 py-1 rounded-3">
+        <div class="user-avatar d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
+          {{ initials }}
+        </div>
+        <div class="user-info d-none d-sm-flex flex-column">
+          <span class="user-name">{{ user?.name }}</span>
+          <span class="user-role">{{ user?.role }}</span>
+        </div>
+        <i class="bi bi-chevron-down user-chevron d-none d-sm-block"></i>
       </div>
-      <mat-icon class="chevron">expand_more</mat-icon>
-    </button>
-
-    <mat-menu #userMenu="matMenu" class="user-dropdown">
-      <button mat-menu-item (click)="navigateToProfile()">
-        <mat-icon>person_outline</mat-icon>
-        My Profile
-      </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item class="logout-item" (click)="onLogout()">
-        <mat-icon>logout</mat-icon>
-        Sign Out
-      </button>
-    </mat-menu>
-
+    </app-dropdown>
   </div>
+
 </header>

@@ -42,7 +42,7 @@ export class InputComponent implements ControlValueAccessor, AfterViewInit, OnDe
   @Input() placeholder = '';
   @Input() hint = '';
   @Input() appearance: 'outline' | 'fill' = 'outline';
-  @Input() subscriptSizing: 'fixed' | 'dynamic' = 'fixed';
+  @Input() subscriptSizing: 'fixed' | 'dynamic' = 'dynamic';
   @Input() type: 'text' | 'password' | 'email' | 'number' | 'tel' | 'search' = 'text';
   @Input() readonly = false;
   @Input() autocomplete = 'off';

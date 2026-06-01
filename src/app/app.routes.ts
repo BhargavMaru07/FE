@@ -1,11 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, roleGuard } from './core/guards/auth-guard';
+import { Success } from './features/auth/success/success';
 
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'auth/login',
     pathMatch: 'full',
+  },
+
+  {
+    path: 'success',
+    component : Success
   },
 
   {
@@ -17,20 +23,20 @@ export const routes: Routes = [
         loadComponent: () => 
           import('./features/auth/login/login.js').then((m) => m.LoginComponent),
       },
-      // {
-      //   path: 'forgot-password',
-      //   loadComponent: () =>
-      //     import('./features/auth/forgot-password/').then(
-      //       (m) => m.ForgotPasswordComponent,
-      //     ),
-      // },
-      // {
-      //   path: 'reset-password',
-      //   loadComponent: () =>
-      //     import('./auth/reset-password/reset-password').then(
-      //       (m) => m.ResetPasswordComponent,
-      //     ),
-      // },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password.js').then(
+            (m) => m.ForgotPasswordComponent,
+          ),
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/auth/reset-password/reset-password.js').then(
+            (m) => m.ResetPasswordComponent,
+          ),
+      },
       {
         path: '',
         redirectTo: 'login',
@@ -63,11 +69,11 @@ export const routes: Routes = [
             (m) => m.WarehouseManagement,
           ),
       },
-      // {
-      //   path: 'profile',
-      //   loadComponent: () =>
-      //     import('./profile/profile').then((m) => m.ProfileComponent),
-      // },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.js').then((m) => m.ProfileComponent),
+      },
       {
         path: '',
         redirectTo: 'users',

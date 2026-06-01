@@ -14,6 +14,8 @@ import {
   JwtPayload,
   LoginRequest,
   ResetPasswordRequest,
+  UpdateProfileRequest,
+  UserProfileResponse,
   UserRole,
 } from '../models/auth-models';
 
@@ -126,6 +128,10 @@ export class AuthService {
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/auth/logout`, {});
   }
 
+  validateLink(request: { email: string; token: string }) {
+    return this.http.post<ApiResponse<boolean>>(`${this.baseUrl}/auth/validate-link`, request);
+  }
+
   logoutAndRedirect(): void {
     this.logout().subscribe({
       next: (res) => {
@@ -140,16 +146,26 @@ export class AuthService {
     });
   }
 
+  getProfile(): Observable<ApiResponse<UserProfileResponse>> {
+    return this.http.get<ApiResponse<UserProfileResponse>>(`${this.baseUrl}/profile`);
+  }
+ 
+  updateProfile(
+    data: UpdateProfileRequest,
+  ): Observable<ApiResponse<UserProfileResponse>> {
+    return this.http.patch<ApiResponse<UserProfileResponse>>(`${this.baseUrl}/profile`, data);
+  }
+
   getDashboardRoute(): string {
     console.log('User role:', this.role());
-    
+
     switch (this.role()) {
       case 'Administrator':
         return '/admin/users';
       case 'WarehouseManager':
-        return '/manager/dashboard';
+        return '/success';
       case 'StockKeeper':
-        return '/stock-keeper/dashboard';
+        return '/success';
       default:
         return '/auth/login';
     }
