@@ -1,0 +1,17 @@
+<app-dialog
+    [loading]="loading()"
+    [submitDisabled] = "form.invalid"
+    (submitted)="onSubmit()"
+>
+
+<form [formGroup]="form">
+    <app-input
+    class="mb-3"
+    formControlName="name"
+    label="Zone Name"
+    placeholder="Enter Zone name"
+    [customErrorMessage]="getNameError()"
+  />
+</form>
+
+</app-dialog>

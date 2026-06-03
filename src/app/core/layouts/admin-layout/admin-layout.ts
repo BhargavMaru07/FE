@@ -7,6 +7,8 @@ const ADMIN_NAV: NavItem[] = [
   { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
   { label: 'Users', icon: 'people_outline', route: '/admin/users' },
   { label: 'Warehouses', icon: 'warehouse', route: '/admin/warehouses' },
+  { label: 'Zones', icon: 'grid_view', route: '/admin/zones' },
+  { label: 'Bins', icon: 'inbox', route: '/admin/bins' },
   { label: 'Products', icon: 'inventory_2', route: '/admin/products' },
   { label: 'Audit Logs', icon: 'receipt_long', route: '/admin/audit-logs' },
 ];

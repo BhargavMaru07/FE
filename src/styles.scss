@@ -1,5 +1,15 @@
 @use '@angular/material' as mat;
 
+:root {
+  @include mat.table-overrides((
+    background-color: white 
+  ));
+
+  @include mat.paginator-overrides((
+    container-background-color: white, 
+  ));
+}
+
 html {
   @include mat.theme((
     color: (

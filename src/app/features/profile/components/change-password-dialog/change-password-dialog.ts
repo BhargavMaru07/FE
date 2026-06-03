@@ -40,9 +40,9 @@ export class ChangePasswordDialogComponent {
   private readonly toast = inject(ToastService);
   private readonly dialogRef = inject(MatDialogRef<ChangePasswordDialogComponent>);
 
-  readonly loading = signal(false);
+   loading = signal(false);
 
-  readonly form = this.fb.group(
+   form = this.fb.group(
     {
       currentPassword: ['', [Validators.required]],
       newPassword: ['', [Validators.required, passwordValidator()]],
