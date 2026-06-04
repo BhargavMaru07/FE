@@ -1,6 +1,6 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSortModule, MatSort, Sort } from '@angular/material/sort';
@@ -11,13 +11,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { debounceTime, distinctUntilChanged, finalize, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, finalize } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DialogService } from '../../../core/services/dialog-service';
 import { ToastService } from '../../../core/services/toast-service';
 import { WarehouseFormDialogComponent } from './components/warehouse-form-dialog/warehouse-form-dialog';
 import { WarehouseManagementService } from './services/warehouse-service';
 import { WarehouseResponse } from './models/warehouse-models';
+import { InputComponent } from '../../../shared/components/input/input';
 
 @Component({
   selector: 'app-warehouse-management',
@@ -35,6 +36,7 @@ import { WarehouseResponse } from './models/warehouse-models';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    InputComponent,
   ],
   templateUrl: './warehouse-management.html',
   styleUrl: './warehouse-management.scss',
@@ -43,10 +45,10 @@ export class WarehouseManagement implements OnInit {
   private readonly service = inject(WarehouseManagementService);
   private readonly dialogSvc = inject(DialogService);
   private readonly toast = inject(ToastService);
-  private readonly searchSubject = new Subject<string>();
+  private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  // @ViewChild(MatPaginator) paginator!: MatPaginator;
+  // @ViewChild(MatSort) sort!: MatSort;
 
   readonly displayedColumns = ['code', 'name', 'city', 'contactPerson', 'contactPhone', 'status', 'actions'];
   readonly dataSource = new MatTableDataSource<WarehouseResponse>();
@@ -54,8 +56,7 @@ export class WarehouseManagement implements OnInit {
   readonly loading = signal(false);
   readonly totalCount = signal(0);
 
-  // Filters
-  readonly searchValue = signal('');
+  search = new FormControl('', [Validators.maxLength(100)]);
   readonly statusFilter = signal('');
 
   readonly pageSize = signal(5);
@@ -65,20 +66,23 @@ export class WarehouseManagement implements OnInit {
 
   readonly statusOptions = ['Active', 'Inactive'];
 
-  constructor() {
-    this.searchSubject.pipe(
+  ngOnInit(): void {
+    this.search.valueChanges.pipe(
       debounceTime(400),
       distinctUntilChanged(),
-      takeUntilDestroyed(),
-    ).subscribe(val => {
-      this.searchValue.set(val);
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(() => {
       this.pageIndex.set(0);
       this.loadData();
     });
+
+    this.loadData();
   }
 
-  ngOnInit(): void {
-    this.loadData();
+  searchError(): string {
+    if (!this.search || !(this.search.dirty || this.search.touched)) return '';
+    if (this.search.hasError('maxlength')) return 'Search value must not exceed 100 characters.';
+    return '';
   }
 
   loadData(): void {
@@ -91,25 +95,19 @@ export class WarehouseManagement implements OnInit {
       {
         pageNumber: this.pageIndex() + 1,
         pageSize: this.pageSize(),
-        search: this.searchValue(),
+        search: this.search.value ?? '',
         sortBy: this.sortBy(),
         sortDirection: this.sortDirection(),
       },
       filters
-    ).pipe(finalize(()=> this.loading.set(false))).subscribe({
+    ).pipe(finalize(() => this.loading.set(false))).subscribe({
       next: res => {
         if (res.isSuccess && res.data) {
           this.dataSource.data = res.data.items;
           this.totalCount.set(res.data.totalCount);
         }
-      },
-      error: () => { }
+      }
     });
-  }
-
-  onSearch(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchSubject.next(value);
   }
 
   onStatusFilter(value: string): void {
@@ -119,10 +117,15 @@ export class WarehouseManagement implements OnInit {
   }
 
   clearFilters(): void {
+    if(this.search.value == ''){
+      this.statusFilter.set('');
+      this.pageIndex.set(0);
+      this.loadData();
+      return;
+    }
     this.statusFilter.set('');
-    this.searchValue.set('');
+    this.search.setValue('');
     this.pageIndex.set(0);
-    this.loadData();
   }
 
   onPage(event: PageEvent): void {
@@ -133,7 +136,7 @@ export class WarehouseManagement implements OnInit {
 
   onSort(sort: Sort): void {
     this.sortBy.set(sort.active);
-    this.sortDirection.set(sort.direction || 'desc')
+    this.sortDirection.set(sort.direction || 'desc');
     this.pageIndex.set(0);
     this.loadData();
   }

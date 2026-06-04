@@ -1,23 +1,22 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, effect, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from "@angular/material/icon";
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InputComponent } from "../../../shared/components/input/input";
 import { WarehouseManagementService } from '../warehouse-management/services/warehouse-service';
 import { ToastService } from '../../../core/services/toast-service';
-import { PagedResult, WarehouseDropdown, WarehouseResponse, ZoneResponse } from '../warehouse-management/models/warehouse-models';
-import { debounceTime, distinctUntilChanged, filter, finalize, map, switchMap } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiResponse } from '../../../core/models/api-response';
+import { WarehouseDropdown, WarehouseResponse, ZoneResponse } from '../warehouse-management/models/warehouse-models';
 import { MatDialog } from '@angular/material/dialog';
 import { ZoneCreateDialog } from './components/zone-create-dialog/zone-create-dialog';
 import { ZoneEditDialog } from './components/zone-edit-dialog/zone-edit-dialog';
@@ -46,30 +45,20 @@ export class ZoneManagement implements OnInit {
   private readonly service = inject(WarehouseManagementService);
   private readonly toast = inject(ToastService);
   private readonly dialog = inject(MatDialog);
-  private destroyRef = inject(DestroyRef);
+  private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  // @ViewChild(MatPaginator) paginator!: MatPaginator;
+  // @ViewChild(MatSort) sort!: MatSort;
 
   displayedColumns = ['code', 'name', 'warehouse', 'status', 'actions'];
   dataSource = new MatTableDataSource<ZoneResponse>();
-  allzones = signal<ZoneResponse[]>([])
-
-  constructor(){
-    effect(()=>{
-      console.log("effect called");
-      
-      this.dataSource.data = this.allzones()
-    })
-  }
 
   loading = signal(false);
   totalCount = signal(0);
 
-  // Filters
-  search = new FormControl('', [Validators.maxLength(100)])
+  search = new FormControl('', [Validators.maxLength(100)]);
   statusFilter = signal('');
-  warehouseFilter = signal('')
+  warehouseFilter = signal('');
 
   pageSize = signal(5);
   pageIndex = signal(0);
@@ -77,105 +66,90 @@ export class ZoneManagement implements OnInit {
   sortDirection = signal('desc');
 
   statusOptions = ['Active', 'Inactive'];
-  warehouseOptions = signal<WarehouseDropdown[]>([])
+  warehouseOptions = signal<WarehouseDropdown[]>([]);
 
   ngOnInit(): void {
     this.search.valueChanges.pipe(
       debounceTime(400),
       distinctUntilChanged(),
-      filter((data) => !!data && data.trim().length >= 3),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (res) => {
-        if (res) this.onSearchChange(res)
-      }
-    })
-    this.loadWarehouose();
+    ).subscribe(() => {
+      this.pageIndex.set(0);
+      this.loadData();
+    });
+
+    this.loadWarehouses();
     this.loadData();
   }
 
-  searchError() {
-    if (!this.search || !(this.search.dirty || this.search.touched)) return "";
-    if (this.search.hasError("maxlength")) return `search value must not exceed 100 characters.`
-    return ""
+  searchError(): string {
+    if (!this.search || !(this.search.dirty || this.search.touched)) return '';
+    if (this.search.hasError('maxlength')) return 'Search value must not exceed 100 characters.';
+    return '';
   }
 
-  loadData() {
-    this.loading.set(true)
+  loadData(): void {
+    this.loading.set(true);
 
     const filters: Record<string, string> = {};
-
     if (this.statusFilter()) filters['Status'] = this.statusFilter();
-    if (this.warehouseFilter()) filters['Warehouse'] = this.warehouseFilter();
+    if (this.warehouseFilter()) filters['WarehouseId'] = this.warehouseFilter();
 
     this.service.getZones(
       {
         pageNumber: this.pageIndex() + 1,
         pageSize: this.pageSize(),
-        search: this.search.value ?? "",
+        search: this.search.value ?? '',
         sortBy: this.sortBy(),
-        sortDirection: this.sortDirection()
+        sortDirection: this.sortDirection(),
       },
       filters
     ).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: (res) => {
+      next: res => {
         if (res.isSuccess && res.data) {
-          this.allzones.set(res.data.items)
-          this.totalCount.set(res.data.totalCount)
+          this.dataSource.data = res.data.items;
+          this.totalCount.set(res.data.totalCount);
         }
       }
-    })
+    });
   }
 
-  loadWarehouose() {
+  loadWarehouses(): void {
     this.service.getWarehouses(
-      {
-        pageNumber: 1,
-        pageSize: 100,
-        search: '',
-        sortBy: '',
-        sortDirection: "desc"
-      })
-      .pipe(map((res: ApiResponse<PagedResult<WarehouseResponse>>) => {
-        return res.data?.items.map(item => ({
-          id: item.id,
-          name: item.name
-        }))
-      })).subscribe({
-        next: res => {
-          if (res) this.warehouseOptions.set(res)
+      { pageNumber: 1, pageSize: 100, sortBy: 'name', sortDirection: 'asc' }
+    ).subscribe({
+      next: res => {
+        if (res.isSuccess && res.data) {
+
+          let data = res.data.items.map((val:WarehouseResponse) : WarehouseDropdown => ({
+           id : val.id,
+           name : val.name
+          }))
+          
+          this.warehouseOptions.set(data);
         }
-      })
+      }
+    });
   }
 
   onStatusFilter(value: string): void {
-    console.log(value);
-
     this.statusFilter.set(value);
     this.pageIndex.set(0);
     this.loadData();
   }
 
   onWarehouseFilter(value: string): void {
-    console.log(value);
-
     this.warehouseFilter.set(value);
     this.pageIndex.set(0);
     this.loadData();
   }
 
-  onSearchChange(value: string) {
-    console.log(value);
-    this.pageIndex.set(0);
-    this.loadData()
-  }
-
-  clearFilters() {
+  clearFilters(): void {
     this.statusFilter.set('');
-    this.pageIndex.set(0);
     this.warehouseFilter.set('');
-    this.search.setValue('')
-    this.loadData()
+    this.search.setValue('');
+    this.pageIndex.set(0);
+    this.loadData();
   }
 
   onPage(event: PageEvent): void {
@@ -185,15 +159,13 @@ export class ZoneManagement implements OnInit {
   }
 
   onSort(sort: Sort): void {
-    console.log(sort);
-
     this.sortBy.set(sort.active);
-    this.sortDirection.set(sort.direction || 'desc')
+    this.sortDirection.set(sort.direction || 'desc');
     this.pageIndex.set(0);
     this.loadData();
   }
 
-  openCreateDialog() {
+  openCreateDialog(): void {
     const ref = this.dialog.open(ZoneCreateDialog, {
       width: '460px',
       maxWidth: '95vw',
@@ -202,14 +174,14 @@ export class ZoneManagement implements OnInit {
       data: {
         config: { title: 'Create Zone', submitLabel: 'Create' },
       },
-    })
+    });
 
     ref.afterClosed().subscribe(res => {
-      if(res) this.loadData()
-    })
+      if (res) this.loadData();
+    });
   }
 
-  openEditDialog(zone: ZoneResponse) {
+  openEditDialog(zone: ZoneResponse): void {
     const ref = this.dialog.open(ZoneEditDialog, {
       width: '460px',
       maxWidth: '95vw',
@@ -217,13 +189,13 @@ export class ZoneManagement implements OnInit {
       panelClass: 'wims-dialog-panel',
       data: {
         config: { title: 'Edit Zone', submitLabel: 'Update' },
-        zone : zone
+        zone: zone,
       },
-    })
+    });
 
     ref.afterClosed().subscribe(res => {
-     if(res) this.loadData()
-    })
+      if (res) this.loadData();
+    });
   }
 
   toggleStatus(zone: ZoneResponse): void {
@@ -233,6 +205,8 @@ export class ZoneManagement implements OnInit {
         if (res.isSuccess) {
           this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
           this.loadData();
+        } else {
+          this.toast.error(res.message ?? 'Failed to update status.');
         }
       }
     });

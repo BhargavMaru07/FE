@@ -33,7 +33,7 @@
             </mat-form-field>
         </div>
 
-        @if (statusFilter() || warehouseFilter() || search.value != '') {
+        @if (statusFilter() || warehouseFilter() || search.value) {
         <button mat-stroked-button (click)="clearFilters()" class="align-self-start">
             <mat-icon>clear</mat-icon> Clear
         </button>

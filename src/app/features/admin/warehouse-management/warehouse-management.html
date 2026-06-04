@@ -9,11 +9,16 @@
   
    <!-- filters  -->
     <div class="d-flex flex-wrap align-items-center gap-4">
-      <mat-form-field appearance="outline" class="search-field">
-        <mat-label>Search</mat-label>
-        <input matInput placeholder="Search by name, code, city..." (input)="onSearch($event)" />
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
+      <app-input
+      class="search-field"
+      label="Search"
+      placeholder="Search by name, code, city..."
+      subscriptSizing="fixed"
+      icon="search"
+      [maxlength]="101"
+      [customErrorMessage]="searchError()"
+      [formControl]="search"
+    />
   
       <mat-form-field appearance="outline" class="filter-field">
         <mat-label>Status</mat-label>
@@ -25,7 +30,7 @@
         </mat-select>
       </mat-form-field>
   
-      @if (statusFilter()) {
+      @if (statusFilter() || search.value) {
         <button mat-stroked-button (click)="clearFilters()" class="align-self-start">
           <mat-icon>clear</mat-icon> Clear
         </button>
