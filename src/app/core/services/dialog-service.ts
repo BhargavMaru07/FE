@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ComponentType } from '@angular/cdk/portal';
-import { DialogConfig } from '@angular/cdk/dialog';
+import { DialogConfig } from '../../shared/components/dialog/dialog';
 
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +17,7 @@ export class DialogService {
     return this.matDialog.open(contentComponent, {
       width,
       maxWidth: '95vw',
-      disableClose: true,
+      disableClose: false,
       data: { config, ...(data ?? {}) },
       panelClass: 'wims-dialog-panel',
     });

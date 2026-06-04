@@ -70,6 +70,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'zones',
+        loadComponent: () =>
+          import('./features/admin/zone-management/zone-management.js').then(
+            (m) => m.ZoneManagement,
+          ),
+      },
+      {
+        path: 'bins',
+        loadComponent: () =>
+          import('./features/admin/bin-management/bin-management.js').then(
+            (m) => m.BinManagement,
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.js').then((m) => m.ProfileComponent),

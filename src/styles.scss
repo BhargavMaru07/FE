@@ -1,5 +1,18 @@
 @use '@angular/material' as mat;
 
+:root {
+  @include mat.table-overrides((
+    background-color: white 
+  ));
+
+  @include mat.paginator-overrides((
+    container-background-color: white, 
+  ));
+}
+
+//reduce input height
+@include mat.form-field-density(-3); 
+
 html {
   @include mat.theme((
     color: (
