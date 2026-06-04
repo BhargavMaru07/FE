@@ -13,7 +13,7 @@
     [customErrorMessage]="getNameError()"
   />
 
-  <mat-form-field appearance="outline" class="filter-field-item">
+  <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
     <mat-label>Warehouse</mat-label>
     <mat-select formControlName = "warehouseId">
         @for (w of warehouseOptions(); track w) {

@@ -17,7 +17,7 @@ export class DialogService {
     return this.matDialog.open(contentComponent, {
       width,
       maxWidth: '95vw',
-      disableClose: true,
+      disableClose: false,
       data: { config, ...(data ?? {}) },
       panelClass: 'wims-dialog-panel',
     });

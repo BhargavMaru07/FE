@@ -46,6 +46,10 @@ export class WarehouseManagementService {
     return this.http.patch<ApiResponse<string>>(`${this.base}/admin/warehouses/${id}/status`, payload);
   }
 
+  deleteWarehouse(id: number): Observable<ApiResponse<string>> {
+    return this.http.delete<ApiResponse<string>>(`${this.base}/admin/warehouses/${id}`)
+  }
+
 
   //zone
   getZones(qp: QueryParams, filters?: Record<string, string>): Observable<ApiResponse<PagedResult<ZoneResponse>>> {
@@ -68,6 +72,10 @@ export class WarehouseManagementService {
 
   updateZoneStatus(id: number, payload: StatusUpdateRequest): Observable<ApiResponse<string>> {
     return this.http.patch<ApiResponse<string>>(`${this.base}/admin/zones/${id}/status`, payload);
+  }
+
+  deleteZone(id: number): Observable<ApiResponse<String>>{
+    return this.http.delete<ApiResponse<string>>(`${this.base}/admin/zones/${id}`)
   }
 
 

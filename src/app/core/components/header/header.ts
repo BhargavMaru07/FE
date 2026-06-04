@@ -62,25 +62,4 @@ export class HeaderComponent {
       },
     ];
   }
-
-  readonly notifications: NotificationItem[] = [
-    {
-      id: 1,
-      title: 'Low stock alert: SKU-1001',
-      description: 'Current quantity: 15 units',
-      read: false,
-    },
-    {
-      id: 2,
-      title: 'PO-2024-001 approved',
-      description: 'Purchase order ready for processing',
-      read: false,
-    },
-    {
-      id: 3,
-      title: 'Stock transfer completed',
-      description: '50 items moved to Regional Hub',
-      read: true,
-    },
-  ];
 }

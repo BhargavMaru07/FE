@@ -19,6 +19,9 @@ import { WarehouseFormDialogComponent } from './components/warehouse-form-dialog
 import { WarehouseManagementService } from './services/warehouse-service';
 import { WarehouseResponse } from './models/warehouse-models';
 import { InputComponent } from '../../../shared/components/input/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-warehouse-management',
@@ -36,6 +39,7 @@ import { InputComponent } from '../../../shared/components/input/input';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     InputComponent,
   ],
   templateUrl: './warehouse-management.html',
@@ -44,6 +48,7 @@ import { InputComponent } from '../../../shared/components/input/input';
 export class WarehouseManagement implements OnInit {
   private readonly service = inject(WarehouseManagementService);
   private readonly dialogSvc = inject(DialogService);
+  private readonly dialog = inject(MatDialog)
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -117,7 +122,7 @@ export class WarehouseManagement implements OnInit {
   }
 
   clearFilters(): void {
-    if(this.search.value == ''){
+    if (this.search.value == '') {
       this.statusFilter.set('');
       this.pageIndex.set(0);
       this.loadData();
@@ -164,15 +169,55 @@ export class WarehouseManagement implements OnInit {
 
   toggleStatus(warehouse: WarehouseResponse): void {
     const newStatus = warehouse.status === 'Active' ? 'Inactive' : 'Active';
-    this.service.updateWarehouseStatus(warehouse.id, { status: newStatus }).subscribe({
-      next: res => {
-        if (res.isSuccess) {
-          this.toast.success(`Warehouse ${newStatus.toLowerCase()} successfully.`);
-          this.loadData();
-        } else {
-          this.toast.error(res.message ?? 'Failed to update status.');
-        }
+
+    this.dialog.open(ConfirmDialog, {
+      width: '420px',
+      data: {
+        title: `${newStatus} Warehouse`,
+        message: `Are you sure you want to ${newStatus} Warehouse?`,
+        confirmText: newStatus
       }
-    });
+    })
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (!confirm) return;
+
+        this.service.updateWarehouseStatus(warehouse.id, { status: newStatus }).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success(`Warehouse ${newStatus.toLowerCase()} successfully.`);
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to update status.');
+            }
+          }
+        });
+      })
+  }
+
+  openDeleteDialog(warehouse: WarehouseResponse) {
+    this.dialog.open(ConfirmDialog, {
+      width: '420px',
+      data: {
+        title: `Delete Warehouse`,
+        message: `Are you sure you want to Delete Warehouse?`,
+        confirmText: "Delete"
+      }
+    })
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (!confirm) return;
+
+        this.service.deleteWarehouse(warehouse.id).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success("Warehouse and related Zones & Bins Deleted successfully.");
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to Delete Warehouse.');
+            }
+          }
+        })
+      })
   }
 }

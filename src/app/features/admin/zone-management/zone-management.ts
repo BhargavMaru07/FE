@@ -20,6 +20,9 @@ import { WarehouseDropdown, WarehouseResponse, ZoneResponse } from '../warehouse
 import { MatDialog } from '@angular/material/dialog';
 import { ZoneCreateDialog } from './components/zone-create-dialog/zone-create-dialog';
 import { ZoneEditDialog } from './components/zone-edit-dialog/zone-edit-dialog';
+import { DialogService } from '../../../core/services/dialog-service';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-zone-management',
@@ -36,6 +39,7 @@ import { ZoneEditDialog } from './components/zone-edit-dialog/zone-edit-dialog';
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     InputComponent
   ],
   templateUrl: './zone-management.html',
@@ -44,6 +48,7 @@ import { ZoneEditDialog } from './components/zone-edit-dialog/zone-edit-dialog';
 export class ZoneManagement implements OnInit {
   private readonly service = inject(WarehouseManagementService);
   private readonly toast = inject(ToastService);
+  private readonly dialogSvc = inject(DialogService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -121,11 +126,11 @@ export class ZoneManagement implements OnInit {
       next: res => {
         if (res.isSuccess && res.data) {
 
-          let data = res.data.items.map((val:WarehouseResponse) : WarehouseDropdown => ({
-           id : val.id,
-           name : val.name
+          let data = res.data.items.map((val: WarehouseResponse): WarehouseDropdown => ({
+            id: val.id,
+            name: val.name
           }))
-          
+
           this.warehouseOptions.set(data);
         }
       }
@@ -138,18 +143,26 @@ export class ZoneManagement implements OnInit {
     this.loadData();
   }
 
-  onWarehouseFilter(value: string): void {
-    this.warehouseFilter.set(value);
+  onWarehouseFilter(value:any): void {
+    if(value.length == 0) this.warehouseFilter.set('');
+    else this.warehouseFilter.set(value);
+
     this.pageIndex.set(0);
     this.loadData();
   }
 
   clearFilters(): void {
+    if(this.search.value == ''){
+      this.statusFilter.set('')
+      this.warehouseFilter.set('')
+      this.pageIndex.set(0);
+      this.loadData();
+      return;
+    }
     this.statusFilter.set('');
     this.warehouseFilter.set('');
     this.search.setValue('');
     this.pageIndex.set(0);
-    this.loadData();
   }
 
   onPage(event: PageEvent): void {
@@ -166,15 +179,13 @@ export class ZoneManagement implements OnInit {
   }
 
   openCreateDialog(): void {
-    const ref = this.dialog.open(ZoneCreateDialog, {
-      width: '460px',
-      maxWidth: '95vw',
-      disableClose: false,
-      panelClass: 'wims-dialog-panel',
-      data: {
-        config: { title: 'Create Zone', submitLabel: 'Create' },
+    const ref = this.dialogSvc.open(
+      {
+        title: "Create Zone",
+        submitLabel: "Create"
       },
-    });
+      ZoneCreateDialog,
+    )
 
     ref.afterClosed().subscribe(res => {
       if (res) this.loadData();
@@ -182,16 +193,14 @@ export class ZoneManagement implements OnInit {
   }
 
   openEditDialog(zone: ZoneResponse): void {
-    const ref = this.dialog.open(ZoneEditDialog, {
-      width: '460px',
-      maxWidth: '95vw',
-      disableClose: false,
-      panelClass: 'wims-dialog-panel',
-      data: {
-        config: { title: 'Edit Zone', submitLabel: 'Update' },
-        zone: zone,
+    const ref = this.dialogSvc.open(
+      {
+        title: "Edit Zone",
+        submitLabel: "Update"
       },
-    });
+      ZoneEditDialog,
+      { zone }
+    )
 
     ref.afterClosed().subscribe(res => {
       if (res) this.loadData();
@@ -200,15 +209,55 @@ export class ZoneManagement implements OnInit {
 
   toggleStatus(zone: ZoneResponse): void {
     const newStatus = zone.status === 'Active' ? 'Inactive' : 'Active';
-    this.service.updateZoneStatus(zone.id, { status: newStatus }).subscribe({
-      next: res => {
-        if (res.isSuccess) {
-          this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
-          this.loadData();
-        } else {
-          this.toast.error(res.message ?? 'Failed to update status.');
-        }
+
+    this.dialog.open(ConfirmDialog, {
+      width: '420px',
+      data: {
+        title: `${newStatus} Zone`,
+        message: `Are you sure you want to ${newStatus} Zone?`,
+        confirmText: newStatus
       }
-    });
+    })
+    .afterClosed()
+    .subscribe(result =>{
+      if(!result) return 
+
+      this.service.updateZoneStatus(zone.id, { status: newStatus }).subscribe({
+        next: res => {
+          if (res.isSuccess) {
+            this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
+            this.loadData();
+          } else {
+            this.toast.error(res.message ?? 'Failed to update status.');
+          }
+        }
+      });
+    })
+  }
+
+  openDeleteDialog(zone: ZoneResponse) {
+    this.dialog.open(ConfirmDialog, {
+      width: '420px',
+      data: {
+        title: `Delete Zone`,
+        message: `Are you sure you want to Delete Zone?`,
+        confirmText: "Delete"
+      }
+    })
+      .afterClosed()
+      .subscribe((confirm) => {
+        if (!confirm) return;
+
+        this.service.deleteZone(zone.id).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success("Zone and related Bins Deleted successfully.");
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to Delete Zone.');
+            }
+          }
+        })
+      })
   }
 }

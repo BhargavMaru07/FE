@@ -10,6 +10,9 @@
   ));
 }
 
+//reduce input height
+@include mat.form-field-density(-3); 
+
 html {
   @include mat.theme((
     color: (
