@@ -52,8 +52,6 @@ export class WarehouseManagement implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
 
-  // @ViewChild(MatPaginator) paginator!: MatPaginator;
-  // @ViewChild(MatSort) sort!: MatSort;
 
   readonly displayedColumns = ['code', 'name', 'city', 'contactPerson', 'contactPhone', 'status', 'actions'];
   readonly dataSource = new MatTableDataSource<WarehouseResponse>();

@@ -28,7 +28,7 @@ export class ZoneCreateDialog implements OnInit {
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern(/^(?=.*[A-Za-z])[A-Za-z0-9\s\-_]+$/)]],
-    warehouseId: [0, Validators.required]
+    warehouseId: [null as number | null, Validators.required]
   })
 
   getNameError() {

@@ -20,6 +20,9 @@
         <mat-option [value]="w.id">{{ w.name }}</mat-option>
         }
     </mat-select>
+    @if (form.get('warehouseId')?.invalid && form.get('warehouseId')?.touched) {
+        <mat-error>Warehouse is required</mat-error>
+      }
 </mat-form-field>
 </form>
 

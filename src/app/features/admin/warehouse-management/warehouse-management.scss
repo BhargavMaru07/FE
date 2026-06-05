@@ -8,15 +8,11 @@
 }
 
 
-// .table-container {
-//   position: relative;
-//   border-radius: 8px;
-//   overflow: auto;
-
-//   table {
-//     width: 100%;
-//   }
-// }
+.small-switch {
+  transform: scale(0.8); 
+  transform-origin: left center;
+  width: max-content; 
+}
 
 .no-data {
   padding: 32px;
