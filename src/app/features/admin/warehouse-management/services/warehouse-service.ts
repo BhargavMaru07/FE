@@ -31,7 +31,7 @@ export class WarehouseManagementService {
 
   //warehouse 
   getWarehouses(qp: QueryParams, filters?: Record<string, string>): Observable<ApiResponse<PagedResult<WarehouseResponse>>> {
-    return this.http.get<ApiResponse<PagedResult<WarehouseResponse>>>(`${this.base}/admin/warehouses`,{ params: this.buildParams(qp, filters) });
+    return this.http.get<ApiResponse<PagedResult<WarehouseResponse>>>(`${this.base}/admin/warehouses`, { params: this.buildParams(qp, filters) });
   }
 
   createWarehouse(payload: WarehouseCreateRequest): Observable<ApiResponse<WarehouseResponse>> {
@@ -53,7 +53,7 @@ export class WarehouseManagementService {
 
   //zone
   getZones(qp: QueryParams, filters?: Record<string, string>): Observable<ApiResponse<PagedResult<ZoneResponse>>> {
-    return this.http.get<ApiResponse<PagedResult<ZoneResponse>>>(`${this.base}/admin/zones`,{ params: this.buildParams(qp, filters) });
+    return this.http.get<ApiResponse<PagedResult<ZoneResponse>>>(`${this.base}/admin/zones`, { params: this.buildParams(qp, filters) });
   }
 
   getZonesDropdown(warehouseId?: number): Observable<ApiResponse<ZoneDropdown[]>> {
@@ -74,7 +74,7 @@ export class WarehouseManagementService {
     return this.http.patch<ApiResponse<string>>(`${this.base}/admin/zones/${id}/status`, payload);
   }
 
-  deleteZone(id: number): Observable<ApiResponse<String>>{
+  deleteZone(id: number): Observable<ApiResponse<String>> {
     return this.http.delete<ApiResponse<string>>(`${this.base}/admin/zones/${id}`)
   }
 
@@ -87,10 +87,10 @@ export class WarehouseManagementService {
     );
   }
 
-  getBinsDropdown(warehouseId?: number , zoneId?:number): Observable<ApiResponse<BinDropdown[]>> {
+  getBinsDropdown(warehouseId?: number, zoneId?: number): Observable<ApiResponse<BinDropdown[]>> {
     let params = new HttpParams();
-    if(warehouseId) params = params.set('warehouseId',warehouseId)
-    if(zoneId) params = params.set('zoneId',zoneId)
+    if (warehouseId) params = params.set('warehouseId', warehouseId)
+    if (zoneId) params = params.set('zoneId', zoneId)
     return this.http.get<ApiResponse<BinDropdown[]>>(`${this.base}/admin/bins/all`)
   }
 
@@ -99,10 +99,14 @@ export class WarehouseManagementService {
   }
 
   updateBin(id: number, payload: BinUpdateRequest): Observable<ApiResponse<BinResponse>> {
-    return this.http.put<ApiResponse<BinResponse>>(`${this.base}/admin/bins/${id}`, payload);
+    return this.http.patch<ApiResponse<BinResponse>>(`${this.base}/admin/bins/${id}`, payload);
   }
 
   updateBinStatus(id: number, payload: StatusUpdateRequest): Observable<ApiResponse<string>> {
     return this.http.patch<ApiResponse<string>>(`${this.base}/admin/bins/${id}/status`, payload);
+  }
+
+  deleteBin(id: number): Observable<ApiResponse<string>> {
+    return this.http.delete<ApiResponse<string>>(`${this.base}/admin/bins/${id}`);
   }
 }
