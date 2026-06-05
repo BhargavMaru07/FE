@@ -53,21 +53,21 @@ export class WarehouseManagement implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
 
-  readonly displayedColumns = ['code', 'name', 'city', 'contactPerson', 'contactPhone', 'status', 'actions'];
-  readonly dataSource = new MatTableDataSource<WarehouseResponse>();
+  displayedColumns = ['code', 'name', 'city', 'contactPerson', 'contactPhone', 'status', 'actions'];
+  dataSource = new MatTableDataSource<WarehouseResponse>();
 
-  readonly loading = signal(false);
-  readonly totalCount = signal(0);
+  loading = signal(false);
+  totalCount = signal(0);
 
   search = new FormControl('', [Validators.maxLength(100)]);
-  readonly statusFilter = signal('');
+  statusFilter = signal('');
 
-  readonly pageSize = signal(5);
-  readonly pageIndex = signal(0);
-  readonly sortBy = signal('createdAt');
-  readonly sortDirection = signal('desc');
+  pageSize = signal(5);
+  pageIndex = signal(0);
+  sortBy = signal('createdAt');
+  sortDirection = signal('desc');
 
-  readonly statusOptions = ['Active', 'Inactive'];
+  statusOptions = ['Active', 'Inactive'];
 
   ngOnInit(): void {
     this.search.valueChanges.pipe(

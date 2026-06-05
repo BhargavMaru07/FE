@@ -18,8 +18,7 @@ import { WarehouseManagementService } from '../warehouse-management/services/war
 import { ToastService } from '../../../core/services/toast-service';
 import { WarehouseDropdown, WarehouseResponse, ZoneResponse } from '../warehouse-management/models/warehouse-models';
 import { MatDialog } from '@angular/material/dialog';
-import { ZoneCreateDialog } from './components/zone-create-dialog/zone-create-dialog';
-import { ZoneEditDialog } from './components/zone-edit-dialog/zone-edit-dialog';
+import { ZoneCreateDialog } from './components/zone-form-dialog/zone-form-dialog';
 import { DialogService } from '../../../core/services/dialog-service';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
@@ -51,9 +50,6 @@ export class ZoneManagement implements OnInit {
   private readonly dialogSvc = inject(DialogService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
-
-  // @ViewChild(MatPaginator) paginator!: MatPaginator;
-  // @ViewChild(MatSort) sort!: MatSort;
 
   displayedColumns = ['code', 'name', 'warehouse', 'status', 'actions'];
   dataSource = new MatTableDataSource<ZoneResponse>();
@@ -185,6 +181,9 @@ export class ZoneManagement implements OnInit {
         submitLabel: "Create"
       },
       ZoneCreateDialog,
+      {
+        warehouseOptions : this.warehouseOptions()
+      }
     )
 
     ref.afterClosed().subscribe(res => {
@@ -198,8 +197,8 @@ export class ZoneManagement implements OnInit {
         title: "Edit Zone",
         submitLabel: "Update"
       },
-      ZoneEditDialog,
-      { zone }
+      ZoneCreateDialog,
+      { zone ,  warehouseOptions : this.warehouseOptions() }
     )
 
     ref.afterClosed().subscribe(res => {

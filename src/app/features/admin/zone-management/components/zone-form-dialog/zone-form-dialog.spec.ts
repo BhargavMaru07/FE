@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ZoneCreateDialog } from './zone-create-dialog';
+import { ZoneCreateDialog } from './zone-form-dialog';
 
 describe('ZoneCreateDialog', () => {
   let component: ZoneCreateDialog;

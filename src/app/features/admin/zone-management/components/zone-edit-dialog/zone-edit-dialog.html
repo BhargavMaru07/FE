@@ -1,8 +1,0 @@
-<app-dialog [loading]="loading()" [submitDisabled]="form.invalid" (submitted)="onSubmit()">
-
-  <form [formGroup]="form">
-    <app-input formControlName="name" label="Zone Name" placeholder="Enter Zone name"
-      [customErrorMessage]="getNameError()" />
-  </form>
-
-</app-dialog>

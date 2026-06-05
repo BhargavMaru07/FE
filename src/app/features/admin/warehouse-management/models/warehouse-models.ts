@@ -51,6 +51,14 @@ export interface ZoneUpdateRequest {
 export interface EditZoneDialogData{
   config : DialogConfig,
   zone : ZoneResponse
+  warehouseOptions : WarehouseDropdown[]
+}
+
+export interface EditBinDialogData {
+  config: DialogConfig;
+  bin?: BinResponse;
+  warehouses: WarehouseDropdown[];
+  zones: ZoneDropdown[];
 }
 
 //Bin
