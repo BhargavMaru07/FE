@@ -1,0 +1,21 @@
+<app-dialog [loading]="loading()" [submitDisabled]="form.invalid" (submitted)="onSubmit()">
+    <form [formGroup]="form" class="dialog-form">
+  
+      <p class="m-0 text-muted small">
+        Changing warehouse for <strong>{{ data.user.fullName }}</strong> ({{ data.user.role }})
+      </p>
+  
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Warehouse</mat-label>
+        <mat-select formControlName="warehouseId">
+          @for (w of warehouses; track w.id) {
+            <mat-option [value]="w.id">{{ w.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.get('warehouseId')?.invalid && form.get('warehouseId')?.touched) {
+          <mat-error>Warehouse is required</mat-error>
+        }
+      </mat-form-field>
+  
+    </form>
+  </app-dialog>
