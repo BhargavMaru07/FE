@@ -154,14 +154,14 @@ export class BinManagement implements OnInit {
   }
 
   onWarehouseFilter(selectedIds: number[]): void {
-    console.log(selectedIds);
-
     let zoneIdArray = this.allZoneOfSelectedWarehouse(selectedIds)
+
     this.selectedWarehouseIds.set(selectedIds);
     this.warehouseFilter.set(selectedIds.length > 0 ? selectedIds.join(',') : '');
-    this.selectedZoneIds.update(prev => [...prev, ...zoneIdArray]);
+
+    this.selectedZoneIds.set(zoneIdArray);
     if (zoneIdArray.length > 0) this.zoneFilter.set(this.selectedZoneIds().join(','))
-    else if (zoneIdArray.length == 0 && this.selectedWarehouseIds().length > 0) this.zoneFilter.set('999')
+    else if (zoneIdArray.length == 0 && this.selectedWarehouseIds().length > 0) this.zoneFilter.set('99999')
     else this.zoneFilter.set('')
     this.pageIndex.set(0);
     this.loadData();

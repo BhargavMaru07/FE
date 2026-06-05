@@ -148,17 +148,14 @@ export class ZoneManagement implements OnInit {
   }
 
   clearFilters(): void {
-    if(this.search.value == ''){
-      this.statusFilter.set('')
-      this.warehouseFilter.set('')
-      this.pageIndex.set(0);
-      this.loadData();
-      return;
-    }
-    this.statusFilter.set('');
-    this.warehouseFilter.set('');
-    this.search.setValue('');
+    this.statusFilter.set('')
+    this.warehouseFilter.set('')
     this.pageIndex.set(0);
+    if (this.search.value !== '') {
+      this.search.setValue('');
+    } else {
+      this.loadData();
+    }
   }
 
   onPage(event: PageEvent): void {
@@ -182,7 +179,7 @@ export class ZoneManagement implements OnInit {
       },
       ZoneCreateDialog,
       {
-        warehouseOptions : this.warehouseOptions()
+        warehouseOptions: this.warehouseOptions()
       }
     )
 
@@ -198,7 +195,7 @@ export class ZoneManagement implements OnInit {
         submitLabel: "Update"
       },
       ZoneCreateDialog,
-      { zone ,  warehouseOptions : this.warehouseOptions() }
+      { zone, warehouseOptions: this.warehouseOptions() }
     )
 
     ref.afterClosed().subscribe(res => {
@@ -217,21 +214,21 @@ export class ZoneManagement implements OnInit {
         confirmText: newStatus
       }
     })
-    .afterClosed()
-    .subscribe(result =>{
-      if(!result) return 
+      .afterClosed()
+      .subscribe(result => {
+        if (!result) return
 
-      this.service.updateZoneStatus(zone.id, { status: newStatus }).subscribe({
-        next: res => {
-          if (res.isSuccess) {
-            this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
-            this.loadData();
-          } else {
-            this.toast.error(res.message ?? 'Failed to update status.');
+        this.service.updateZoneStatus(zone.id, { status: newStatus }).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to update status.');
+            }
           }
-        }
-      });
-    })
+        });
+      })
   }
 
   openDeleteDialog(zone: ZoneResponse) {

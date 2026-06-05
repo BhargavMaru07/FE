@@ -120,15 +120,13 @@ export class WarehouseManagement implements OnInit {
   }
 
   clearFilters(): void {
-    if (this.search.value == '') {
-      this.statusFilter.set('');
-      this.pageIndex.set(0);
-      this.loadData();
-      return;
-    }
     this.statusFilter.set('');
-    this.search.setValue('');
     this.pageIndex.set(0);
+    if (this.search.value !== '') {
+      this.search.setValue('');
+    } else {
+      this.loadData();
+    }
   }
 
   onPage(event: PageEvent): void {
