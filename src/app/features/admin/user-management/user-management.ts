@@ -19,7 +19,7 @@ import { ToastService } from '../../../core/services/toast-service';
 import { WarehouseManagementService } from '../warehouse-management/services/warehouse-service';
 import { WarehouseDropdown } from '../warehouse-management/models/warehouse-models';
 import { UserManagementService } from './services/user-management-service';
-import { USER_ROLES, USER_STATUSES, UserSummaryResponse } from './models/user-models';
+import { ALL_USER_ROLES, USER_ROLES, USER_STATUSES, UserSummaryResponse } from './models/user-models';
 import { CreateUserDialog } from './components/create-user-dialog/create-user-dialog';
 import { EditUserRoleDialog } from './components/edit-user-role-dialog/edit-user-role-dialog';
 import { EditUserWarehouseDialog } from './components/edit-user-warehouse-dialog/edit-user-warehouse-dialog';
@@ -63,25 +63,24 @@ export class UserManagement implements OnInit {
   search = new FormControl('', [Validators.maxLength(100)]);
   statusFilter = signal('');
   roleFilter = signal('');
+  selectedRoleIds = signal<string[]>([]);
 
   pageSize = signal(5);
   pageIndex = signal(0);
   sortBy = signal('createdAt');
   sortDirection = signal('desc');
 
-  readonly roleOptions = USER_ROLES;
+  readonly roleOptions = ALL_USER_ROLES;
   readonly statusOptions = USER_STATUSES;
   warehouses = signal<WarehouseDropdown[]>([]);
 
   ngOnInit(): void {
-    this.search.valueChanges.pipe(
-      debounceTime(400),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => {
-      this.pageIndex.set(0);
-      this.loadData();
-    });
+    this.search.valueChanges
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.pageIndex.set(0);
+        this.loadData();
+      });
 
     this.loadWarehouses();
     this.loadData();
@@ -100,35 +99,38 @@ export class UserManagement implements OnInit {
     if (this.statusFilter()) filters['Status'] = this.statusFilter();
     if (this.roleFilter()) filters['Role'] = this.roleFilter();
 
-    this.service.getUsers(
-      {
-        pageNumber: this.pageIndex() + 1,
-        pageSize: this.pageSize(),
-        search: this.search.value ?? '',
-        sortBy: this.sortBy(),
-        sortDirection: this.sortDirection(),
-      },
-      filters
-    ).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: res => {
-        if (res.isSuccess && res.data) {
-          this.dataSource.data = res.data.items;
-          this.totalCount.set(res.data.totalCount);
-        }
-      }
-    });
+    this.service
+      .getUsers(
+        {
+          pageNumber: this.pageIndex() + 1,
+          pageSize: this.pageSize(),
+          search: this.search.value ?? '',
+          sortBy: this.sortBy(),
+          sortDirection: this.sortDirection(),
+        },
+        filters,
+      )
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data) {
+            this.dataSource.data = res.data.items;
+            this.totalCount.set(res.data.totalCount);
+          }
+        },
+      });
   }
 
   loadWarehouses(): void {
-    this.warehouseService.getWarehouses(
-      { pageNumber: 1, pageSize: 200, sortBy: 'name', sortDirection: 'asc' }
-    ).subscribe({
-      next: res => {
-        if (res.isSuccess && res.data) {
-          this.warehouses.set(res.data.items.map(w => ({ id: w.id, name: w.name })));
-        }
-      }
-    });
+    this.warehouseService
+      .getWarehouses({ pageNumber: 1, pageSize: 200, sortBy: 'name', sortDirection: 'asc' })
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data) {
+            this.warehouses.set(res.data.items.map((w) => ({ id: w.id, name: w.name })));
+          }
+        },
+      });
   }
 
   onStatusFilter(value: string): void {
@@ -137,8 +139,9 @@ export class UserManagement implements OnInit {
     this.loadData();
   }
 
-  onRoleFilter(value: string): void {
-    this.roleFilter.set(value);
+  onRoleFilter(selectedValues: string[]): void {
+    this.selectedRoleIds.set(selectedValues);
+    this.roleFilter.set(selectedValues.length > 0 ? selectedValues.join(',') : '');
     this.pageIndex.set(0);
     this.loadData();
   }
@@ -146,9 +149,13 @@ export class UserManagement implements OnInit {
   clearFilters(): void {
     this.statusFilter.set('');
     this.roleFilter.set('');
-    this.search.setValue('');
+    this.selectedRoleIds.set([]);
     this.pageIndex.set(0);
-    this.loadData();
+    if (this.search.value !== '') {
+      this.search.setValue(''); // valueChanges triggers loadData automatically
+    } else {
+      this.loadData();
+    }
   }
 
   onPage(event: PageEvent): void {
@@ -175,7 +182,7 @@ export class UserManagement implements OnInit {
         warehouses: this.warehouses(),
       },
     });
-    ref.afterClosed().subscribe(res => {
+    ref.afterClosed().subscribe((res) => {
       if (res) this.loadData();
     });
   }
@@ -192,7 +199,7 @@ export class UserManagement implements OnInit {
         warehouses: this.warehouses(),
       },
     });
-    ref.afterClosed().subscribe(res => {
+    ref.afterClosed().subscribe((res) => {
       if (res) this.loadData();
     });
   }
@@ -209,27 +216,27 @@ export class UserManagement implements OnInit {
         warehouses: this.warehouses(),
       },
     });
-    ref.afterClosed().subscribe(res => {
+    ref.afterClosed().subscribe((res) => {
       if (res) this.loadData();
     });
   }
 
   toggleStatus(user: UserSummaryResponse): void {
+    if (user.role === 'Administrator') return;
     const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
     this.service.updateUserStatus(user.id, { status: newStatus }).subscribe({
-      next: res => {
+      next: (res) => {
         if (res.isSuccess) {
           this.toast.success(`User ${newStatus.toLowerCase()} successfully.`);
           this.loadData();
         } else {
           this.toast.error(res.message ?? 'Failed to update status.');
         }
-      }
+      },
     });
   }
 
   canChangeWarehouse(user: UserSummaryResponse): boolean {
     return user.role === 'WarehouseManager' || user.role === 'StockKeeper';
   }
-
 }

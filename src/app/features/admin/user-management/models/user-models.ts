@@ -50,8 +50,9 @@ export interface UserQueryParams {
     sortDirection?: string;
 }
 
-export const USER_ROLES = ['Administrator', 'WarehouseManager', 'StockKeeper', 'Viewer'];
-export const USER_STATUSES = ['Active', 'Inactive'];
+export const USER_ROLES = ['WarehouseManager', 'StockKeeper', 'Viewer'];
+export const ALL_USER_ROLES = ['Administrator', 'WarehouseManager', 'StockKeeper', 'Viewer'];
+export const USER_STATUSES = ['Active', 'Inactive', 'Locked'];
 export const ROLES_REQUIRING_WAREHOUSE = ['WarehouseManager', 'StockKeeper'];
 export const ROLES_WITHOUT_WAREHOUSE = ['Administrator', 'Viewer'];
 

@@ -161,7 +161,7 @@ export class BinManagement implements OnInit {
 
     this.selectedZoneIds.set(zoneIdArray);
     if (zoneIdArray.length > 0) this.zoneFilter.set(this.selectedZoneIds().join(','))
-    else if (zoneIdArray.length == 0 && this.selectedWarehouseIds().length > 0) this.zoneFilter.set('99999')
+    else if (zoneIdArray.length == 0 && this.selectedWarehouseIds().length > 0) this.zoneFilter.set('-1')
     else this.zoneFilter.set('')
     this.pageIndex.set(0);
     this.loadData();

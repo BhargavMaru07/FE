@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { ApiResponse } from '../../../../core/models/api-response';
-import { BinCreateRequest, BinDropdown, BinResponse, BinUpdateRequest, PagedResult, QueryParams, StatusUpdateRequest, WarehouseCreateRequest, WarehouseResponse, WarehouseUpdateRequest, ZoneCreateRequest, ZoneDropdown, ZoneResponse, ZoneUpdateRequest } from '../models/warehouse-models';
+import { BinCreateRequest, BinResponse, BinUpdateRequest, PagedResult, QueryParams, StatusUpdateRequest, WarehouseCreateRequest, WarehouseResponse, WarehouseUpdateRequest, ZoneCreateRequest, ZoneDropdown, ZoneResponse, ZoneUpdateRequest } from '../models/warehouse-models';
 
 
 @Injectable({ providedIn: 'root' })
@@ -85,13 +85,6 @@ export class WarehouseManagementService {
       `${this.base}/admin/bins`,
       { params: this.buildParams(qp, filters) }
     );
-  }
-
-  getBinsDropdown(warehouseId?: number, zoneId?: number): Observable<ApiResponse<BinDropdown[]>> {
-    let params = new HttpParams();
-    if (warehouseId) params = params.set('warehouseId', warehouseId)
-    if (zoneId) params = params.set('zoneId', zoneId)
-    return this.http.get<ApiResponse<BinDropdown[]>>(`${this.base}/admin/bins/all`)
   }
 
   createBin(payload: BinCreateRequest): Observable<ApiResponse<BinResponse>> {

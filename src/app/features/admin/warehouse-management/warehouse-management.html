@@ -40,11 +40,10 @@
     <!-- table -->
     <div class="position-relative border-2 overflow-auto">
       @if (loading()) {
-        <div class="d-flex justify-content-center align-items-center">
+        <div class="loading-overlay">
           <mat-spinner diameter="40" />
         </div>
-      } 
-      <!-- @else { -->
+      }
         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" class="w-100">
   
           <ng-container matColumnDef="code">
@@ -120,6 +119,5 @@
           [pageSizeOptions]="[5,10, 25, 50]"
           (page)="onPage($event)"
         />
-      <!-- } -->
     </div>
   </div>
