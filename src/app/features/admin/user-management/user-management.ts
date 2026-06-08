@@ -19,11 +19,13 @@ import { ToastService } from '../../../core/services/toast-service';
 import { WarehouseManagementService } from '../warehouse-management/services/warehouse-service';
 import { WarehouseDropdown } from '../warehouse-management/models/warehouse-models';
 import { UserManagementService } from './services/user-management-service';
-import { USER_ROLES, USER_STATUSES, UserSummaryResponse } from './models/user-models';
+import { ALL_USER_ROLES, USER_STATUSES, UserSummaryResponse } from './models/user-models';
 import { CreateUserDialog } from './components/create-user-dialog/create-user-dialog';
 import { EditUserRoleDialog } from './components/edit-user-role-dialog/edit-user-role-dialog';
 import { EditUserWarehouseDialog } from './components/edit-user-warehouse-dialog/edit-user-warehouse-dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { DialogService } from '../../../core/services/dialog-service';
+import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-user-management',
@@ -51,6 +53,7 @@ export class UserManagement implements OnInit {
   private readonly service = inject(UserManagementService);
   private readonly warehouseService = inject(WarehouseManagementService);
   private readonly toast = inject(ToastService);
+  private readonly dialogService = inject(DialogService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -63,13 +66,14 @@ export class UserManagement implements OnInit {
   search = new FormControl('', [Validators.maxLength(100)]);
   statusFilter = signal('');
   roleFilter = signal('');
+  selectedRoleIds = signal<string[]>([]);
 
   pageSize = signal(5);
   pageIndex = signal(0);
   sortBy = signal('createdAt');
   sortDirection = signal('desc');
 
-  readonly roleOptions = USER_ROLES;
+  readonly roleOptions = ALL_USER_ROLES;
   readonly statusOptions = USER_STATUSES;
   warehouses = signal<WarehouseDropdown[]>([]);
 
@@ -137,8 +141,9 @@ export class UserManagement implements OnInit {
     this.loadData();
   }
 
-  onRoleFilter(value: string): void {
-    this.roleFilter.set(value);
+  onRoleFilter(selectedValues: string[]): void {
+    this.selectedRoleIds.set(selectedValues);
+    this.roleFilter.set(selectedValues.length > 0 ? selectedValues.join(',') : '');
     this.pageIndex.set(0);
     this.loadData();
   }
@@ -146,9 +151,13 @@ export class UserManagement implements OnInit {
   clearFilters(): void {
     this.statusFilter.set('');
     this.roleFilter.set('');
-    this.search.setValue('');
+    this.selectedRoleIds.set([]);
     this.pageIndex.set(0);
-    this.loadData();
+    if (this.search.value !== '') {
+      this.search.setValue('');
+    } else {
+      this.loadData();
+    }
   }
 
   onPage(event: PageEvent): void {
@@ -165,67 +174,107 @@ export class UserManagement implements OnInit {
   }
 
   openCreateDialog(): void {
-    const ref = this.dialog.open(CreateUserDialog, {
-      width: '500px',
-      maxWidth: '95vw',
-      disableClose: true,
-      panelClass: 'wims-dialog-panel',
-      data: {
-        config: { title: 'Create User', submitLabel: 'Create' },
-        warehouses: this.warehouses(),
-      },
-    });
+    const ref = this.dialogService.open({
+      title: "Create User", submitLabel: "Create"
+    },
+      CreateUserDialog,
+      {
+        warehouses: this.warehouses()
+      }
+    );
+
     ref.afterClosed().subscribe(res => {
       if (res) this.loadData();
-    });
+    })
   }
 
   openEditRoleDialog(user: UserSummaryResponse): void {
-    const ref = this.dialog.open(EditUserRoleDialog, {
-      width: '460px',
-      maxWidth: '95vw',
-      disableClose: true,
-      panelClass: 'wims-dialog-panel',
-      data: {
-        config: { title: 'Change Role', submitLabel: 'Update' },
-        user,
-        warehouses: this.warehouses(),
-      },
-    });
+    const ref = this.dialogService.open({
+      title: "Change Role", submitLabel: "Update"
+    },
+      EditUserRoleDialog,
+      {
+        user, warehouses: this.warehouses()
+      }
+    );
+
     ref.afterClosed().subscribe(res => {
       if (res) this.loadData();
-    });
+    })
   }
 
   openEditWarehouseDialog(user: UserSummaryResponse): void {
-    const ref = this.dialog.open(EditUserWarehouseDialog, {
-      width: '460px',
-      maxWidth: '95vw',
-      disableClose: true,
-      panelClass: 'wims-dialog-panel',
-      data: {
-        config: { title: 'Change Warehouse', submitLabel: 'Update' },
-        user,
-        warehouses: this.warehouses(),
-      },
-    });
+    const ref = this.dialogService.open({
+      title: "Change Warehouse", submitLabel: "Update"
+    },
+      EditUserWarehouseDialog,
+      {
+        user, warehouses: this.warehouses()
+      }
+    );
+
     ref.afterClosed().subscribe(res => {
       if (res) this.loadData();
-    });
+    })
   }
 
   toggleStatus(user: UserSummaryResponse): void {
+    if (user.role === 'Administrator') return;
+
     const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
-    this.service.updateUserStatus(user.id, { status: newStatus }).subscribe({
-      next: res => {
-        if (res.isSuccess) {
-          this.toast.success(`User ${newStatus.toLowerCase()} successfully.`);
-          this.loadData();
-        } else {
-          this.toast.error(res.message ?? 'Failed to update status.');
-        }
-      }
-    });
+
+    this.dialog.open(ConfirmDialog, {
+      width: '420px',
+      data: {
+        title: `${newStatus} User`,
+        message: `Are you sure you want to ${newStatus} User?`,
+        confirmText: newStatus,
+      },
+    })
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result) return;
+
+        this.service.updateUserStatus(user.id, { status: newStatus }).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success(`User ${newStatus.toLowerCase()} successfully.`);
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to update status.');
+            }
+          }
+        });
+      });
+  }
+
+  openDeleteDialog(user: UserSummaryResponse): void {
+    if (user.role === 'Administrator') return;
+
+    const ref = this.dialog.open(ConfirmDialog, {
+      width: "500px",
+      data: {
+        title: `Delete User`,
+        message: `Are you sure you want to Delete User?`,
+        confirmText: "Delete",
+      },
+
+    }).afterClosed()
+      .subscribe(result => {
+        
+        if (!result) return;
+
+        this.service.deleteUser(user.id).subscribe({
+          next: res => {
+            if (res.isSuccess) {
+              this.toast.success(`User Deleted successfully.`);
+              this.loadData();
+            } else {
+              this.toast.error(res.message ?? 'Failed to Delete User.');
+            }
+          }
+        })
+      })
   }
 
   canChangeWarehouse(user: UserSummaryResponse): boolean {

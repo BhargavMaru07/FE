@@ -39,7 +39,7 @@ import { ConfirmDialog } from '../../../shared/components/confirm-dialog/confirm
     MatMenuModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
-    InputComponent
+    InputComponent,
   ],
   templateUrl: './zone-management.html',
   styleUrl: './zone-management.scss',
@@ -61,6 +61,8 @@ export class ZoneManagement implements OnInit {
   statusFilter = signal('');
   warehouseFilter = signal('');
 
+  selectedWarehouseIds = signal<number[]>([]);
+
   pageSize = signal(5);
   pageIndex = signal(0);
   sortBy = signal('createdAt');
@@ -70,14 +72,12 @@ export class ZoneManagement implements OnInit {
   warehouseOptions = signal<WarehouseDropdown[]>([]);
 
   ngOnInit(): void {
-    this.search.valueChanges.pipe(
-      debounceTime(400),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.pageIndex.set(0);
-      this.loadData();
-    });
+    this.search.valueChanges
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.pageIndex.set(0);
+        this.loadData();
+      });
 
     this.loadWarehouses();
     this.loadData();
@@ -96,41 +96,45 @@ export class ZoneManagement implements OnInit {
     if (this.statusFilter()) filters['Status'] = this.statusFilter();
     if (this.warehouseFilter()) filters['WarehouseId'] = this.warehouseFilter();
 
-    this.service.getZones(
-      {
-        pageNumber: this.pageIndex() + 1,
-        pageSize: this.pageSize(),
-        search: this.search.value ?? '',
-        sortBy: this.sortBy(),
-        sortDirection: this.sortDirection(),
-      },
-      filters
-    ).pipe(finalize(() => this.loading.set(false))).subscribe({
-      next: res => {
-        if (res.isSuccess && res.data) {
-          this.dataSource.data = res.data.items;
-          this.totalCount.set(res.data.totalCount);
-        }
-      }
-    });
+    this.service
+      .getZones(
+        {
+          pageNumber: this.pageIndex() + 1,
+          pageSize: this.pageSize(),
+          search: this.search.value ?? '',
+          sortBy: this.sortBy(),
+          sortDirection: this.sortDirection(),
+        },
+        filters,
+      )
+      .pipe(finalize(() => this.loading.set(false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data) {
+            this.dataSource.data = res.data.items;
+            this.totalCount.set(res.data.totalCount);
+          }
+        },
+      });
   }
 
   loadWarehouses(): void {
-    this.service.getWarehouses(
-      { pageNumber: 1, pageSize: 100, sortBy: 'name', sortDirection: 'asc' }
-    ).subscribe({
-      next: res => {
-        if (res.isSuccess && res.data) {
+    this.service
+      .getWarehouses({ pageNumber: 1, pageSize: 100, sortBy: 'name', sortDirection: 'asc' })
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data) {
+            let data = res.data.items.map(
+              (val: WarehouseResponse): WarehouseDropdown => ({
+                id: val.id,
+                name: val.name,
+              }),
+            );
 
-          let data = res.data.items.map((val: WarehouseResponse): WarehouseDropdown => ({
-            id: val.id,
-            name: val.name
-          }))
-
-          this.warehouseOptions.set(data);
-        }
-      }
-    });
+            this.warehouseOptions.set(data);
+          }
+        },
+      });
   }
 
   onStatusFilter(value: string): void {
@@ -139,17 +143,17 @@ export class ZoneManagement implements OnInit {
     this.loadData();
   }
 
-  onWarehouseFilter(value:any): void {
-    if(value.length == 0) this.warehouseFilter.set('');
-    else this.warehouseFilter.set(value);
-
+  onWarehouseFilter(value: number[]): void {
+    this.selectedWarehouseIds.set(value);
+    this.warehouseFilter.set(value.length > 0 ? value.join(',') : '');
     this.pageIndex.set(0);
     this.loadData();
   }
 
   clearFilters(): void {
-    this.statusFilter.set('')
-    this.warehouseFilter.set('')
+    this.statusFilter.set('');
+    this.warehouseFilter.set('');
+    this.selectedWarehouseIds.set([]);
     this.pageIndex.set(0);
     if (this.search.value !== '') {
       this.search.setValue('');
@@ -174,16 +178,16 @@ export class ZoneManagement implements OnInit {
   openCreateDialog(): void {
     const ref = this.dialogSvc.open(
       {
-        title: "Create Zone",
-        submitLabel: "Create"
+        title: 'Create Zone',
+        submitLabel: 'Create',
       },
       ZoneCreateDialog,
       {
-        warehouseOptions: this.warehouseOptions()
-      }
-    )
+        warehouseOptions: this.warehouseOptions(),
+      },
+    );
 
-    ref.afterClosed().subscribe(res => {
+    ref.afterClosed().subscribe((res) => {
       if (res) this.loadData();
     });
   }
@@ -191,14 +195,14 @@ export class ZoneManagement implements OnInit {
   openEditDialog(zone: ZoneResponse): void {
     const ref = this.dialogSvc.open(
       {
-        title: "Edit Zone",
-        submitLabel: "Update"
+        title: 'Edit Zone',
+        submitLabel: 'Update',
       },
       ZoneCreateDialog,
-      { zone, warehouseOptions: this.warehouseOptions() }
-    )
+      { zone, warehouseOptions: this.warehouseOptions() },
+    );
 
-    ref.afterClosed().subscribe(res => {
+    ref.afterClosed().subscribe((res) => {
       if (res) this.loadData();
     });
   }
@@ -206,54 +210,56 @@ export class ZoneManagement implements OnInit {
   toggleStatus(zone: ZoneResponse): void {
     const newStatus = zone.status === 'Active' ? 'Inactive' : 'Active';
 
-    this.dialog.open(ConfirmDialog, {
-      width: '420px',
-      data: {
-        title: `${newStatus} Zone`,
-        message: `Are you sure you want to ${newStatus} Zone?`,
-        confirmText: newStatus
-      }
-    })
+    this.dialog
+      .open(ConfirmDialog, {
+        width: '420px',
+        data: {
+          title: `${newStatus} Zone`,
+          message: `Are you sure you want to ${newStatus} Zone?`,
+          confirmText: newStatus,
+        },
+      })
       .afterClosed()
-      .subscribe(result => {
-        if (!result) return
+      .subscribe((result) => {
+        if (!result) return;
 
         this.service.updateZoneStatus(zone.id, { status: newStatus }).subscribe({
-          next: res => {
+          next: (res) => {
             if (res.isSuccess) {
               this.toast.success(`Zone ${newStatus.toLowerCase()} successfully.`);
               this.loadData();
             } else {
               this.toast.error(res.message ?? 'Failed to update status.');
             }
-          }
+          },
         });
-      })
+      });
   }
 
   openDeleteDialog(zone: ZoneResponse) {
-    this.dialog.open(ConfirmDialog, {
-      width: '420px',
-      data: {
-        title: `Delete Zone`,
-        message: `Are you sure you want to Delete Zone?`,
-        confirmText: "Delete"
-      }
-    })
+    this.dialog
+      .open(ConfirmDialog, {
+        width: '420px',
+        data: {
+          title: `Delete Zone`,
+          message: `Are you sure you want to Delete Zone?`,
+          confirmText: 'Delete',
+        },
+      })
       .afterClosed()
       .subscribe((confirm) => {
         if (!confirm) return;
 
         this.service.deleteZone(zone.id).subscribe({
-          next: res => {
+          next: (res) => {
             if (res.isSuccess) {
-              this.toast.success("Zone and related Bins Deleted successfully.");
+              this.toast.success('Zone and related Bins Deleted successfully.');
               this.loadData();
             } else {
               this.toast.error(res.message ?? 'Failed to Delete Zone.');
             }
-          }
-        })
-      })
+          },
+        });
+      });
   }
 }

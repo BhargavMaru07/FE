@@ -90,13 +90,6 @@ export interface WarehouseDropdown {
   name: string
 }
 
-export interface BinDropdown {
-  id: number;
-  code: string;
-  name: string;
-  zoneId: number;
-  warehouseId: number
-}
 
 export interface ZoneDropdown {
   id: number;

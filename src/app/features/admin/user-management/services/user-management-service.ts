@@ -46,6 +46,10 @@ export class UserManagementService {
         return this.http.post<ApiResponse<UserResponse>>(`${this.base}/admin/create-user`, payload);
     }
 
+    deleteUser(id: number): Observable<ApiResponse<string>> {
+        return this.http.delete<ApiResponse<string>>(`${this.base}/admin/users/${id}`)
+    }
+
     updateUserStatus(id: number, payload: UpdateUserStatusRequest): Observable<ApiResponse<UserResponse>> {
         return this.http.patch<ApiResponse<UserResponse>>(`${this.base}/admin/users/${id}/status`, payload);
     }

@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px 16px;
+    padding: 20px 24px 12px;
     border-bottom: 1px solid #f1f5f9;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .dialog-body {
-    padding: 20px 24px;
+    padding: 5px 24px;
     overflow-y: auto;
     max-height: 60vh;
 }
