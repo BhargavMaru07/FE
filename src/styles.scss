@@ -61,3 +61,19 @@ a {
 .mat-mdc-raised-button {
   letter-spacing: normal !important;
 }
+
+.small-switch {
+  transform: scale(0.8); 
+  transform-origin: left center;
+  width: max-content; 
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  z-index: 10;
+}

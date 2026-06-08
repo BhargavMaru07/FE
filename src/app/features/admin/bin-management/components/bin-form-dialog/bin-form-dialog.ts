@@ -5,10 +5,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { InputComponent } from '../../../../../shared/components/input/input';
-import { DialogComponent } from '../../../../../shared/components/dialog/dialog';
+import { DialogComponent, DialogConfig } from '../../../../../shared/components/dialog/dialog';
 import { ToastService } from '../../../../../core/services/toast-service';
 import { WarehouseManagementService } from '../../../warehouse-management/services/warehouse-service';
-import { BinResponse, WarehouseDropdown, ZoneDropdown } from '../../../warehouse-management/models/warehouse-models';
+import { BinResponse, EditBinDialogData, WarehouseDropdown, ZoneDropdown } from '../../../warehouse-management/models/warehouse-models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 
@@ -24,12 +24,7 @@ export class BinFormDialog implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   readonly dialogRef = inject(MatDialogRef<BinFormDialog>);
-  readonly data: {
-    config: any;
-    bin?: BinResponse;
-    warehouses: WarehouseDropdown[];
-    zones: ZoneDropdown[];
-  } = inject(MAT_DIALOG_DATA);
+  readonly data: EditBinDialogData = inject(MAT_DIALOG_DATA);
 
    loading = signal(false);
    isEdit = signal(false);

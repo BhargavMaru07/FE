@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ZoneEditDialog } from './zone-edit-dialog';
+import { EditUserRoleDialog } from './edit-user-role-dialog';
 
-describe('ZoneEditDialog', () => {
-  let component: ZoneEditDialog;
-  let fixture: ComponentFixture<ZoneEditDialog>;
+describe('EditUserRoleDialog', () => {
+  let component: EditUserRoleDialog;
+  let fixture: ComponentFixture<EditUserRoleDialog>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ZoneEditDialog]
+      imports: [EditUserRoleDialog]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(ZoneEditDialog);
+    fixture = TestBed.createComponent(EditUserRoleDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
