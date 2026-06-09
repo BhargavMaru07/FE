@@ -84,6 +84,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'product-category',
+        loadComponent: () =>
+          import('./features/admin/product-category/product-category.js').then(
+            (m) => m.ProductCategory,
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.js').then((m) => m.ProfileComponent),
