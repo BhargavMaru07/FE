@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { finalize } from 'rxjs';
-import { DialogComponent } from '../../../../../shared/components/dialog/dialog';
+import { DialogComponent, DialogConfig } from '../../../../../shared/components/dialog/dialog';
 import { ToastService } from '../../../../../core/services/toast-service';
 import { UserManagementService } from '../../services/user-management-service';
 import { WarehouseDropdown } from '../../../warehouse-management/models/warehouse-models';
@@ -21,8 +21,7 @@ export class EditUserWarehouseDialog {
   private readonly service = inject(UserManagementService);
   private readonly toast = inject(ToastService);
   readonly dialogRef = inject(MatDialogRef<EditUserWarehouseDialog>);
-  readonly data: { config: any; user: UserSummaryResponse; warehouses: WarehouseDropdown[] } =
-    inject(MAT_DIALOG_DATA);
+  readonly data: { config: DialogConfig; user: UserSummaryResponse; warehouses: WarehouseDropdown[] } = inject(MAT_DIALOG_DATA);
 
   loading = signal(false);
 
@@ -30,7 +29,6 @@ export class EditUserWarehouseDialog {
     warehouseId: [null as number | null, Validators.required],
   });
 
-  // exclude current warehouse from dropdown — backend also blocks same-warehouse assignment
   get availableWarehouses(): WarehouseDropdown[] {
     return (this.data.warehouses ?? []).filter((w) => w.name !== this.data.user.warehouseName);
   }
@@ -48,8 +46,7 @@ export class EditUserWarehouseDialog {
     this.loading.set(true);
     const raw = this.form.getRawValue();
 
-    this.service
-      .updateUserWarehouse(this.data.user.id, {
+    this.service.updateUserWarehouse(this.data.user.id, {
         warehouseId: raw.warehouseId!,
       })
       .pipe(finalize(() => this.loading.set(false)))
@@ -61,8 +58,7 @@ export class EditUserWarehouseDialog {
           } else {
             this.toast.error(res.message ?? 'Failed to update warehouse.');
           }
-        },
-        error: () => this.toast.error('Request failed. Please try again.'),
+        }
       });
   }
 }

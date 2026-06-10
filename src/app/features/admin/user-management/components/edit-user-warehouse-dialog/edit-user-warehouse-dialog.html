@@ -1,7 +1,7 @@
 <app-dialog [loading]="loading()" [submitDisabled]="form.invalid" (submitted)="onSubmit()">
   <form [formGroup]="form">
 
-    <p class="mb-3 text-muted small">
+    <p>
       Changing warehouse for <strong>{{ data.user.fullName }}</strong> ({{ data.user.role }})<br />
       Current warehouse: <strong>{{ currentWarehouseName }}</strong>
     </p>

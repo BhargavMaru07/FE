@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { finalize } from 'rxjs';
-import { DialogComponent } from '../../../../../shared/components/dialog/dialog';
+import { DialogComponent, DialogConfig } from '../../../../../shared/components/dialog/dialog';
 import { ToastService } from '../../../../../core/services/toast-service';
 import { UserManagementService } from '../../services/user-management-service';
 import { WarehouseDropdown } from '../../../warehouse-management/models/warehouse-models';
@@ -26,15 +26,14 @@ export class EditUserRoleDialog implements OnInit {
   private readonly service = inject(UserManagementService);
   private readonly toast = inject(ToastService);
   readonly dialogRef = inject(MatDialogRef<EditUserRoleDialog>);
-  readonly data: { config: any; user: UserSummaryResponse; warehouses: WarehouseDropdown[] } =
-    inject(MAT_DIALOG_DATA);
+  readonly data: { config: DialogConfig; user: UserSummaryResponse; warehouses: WarehouseDropdown[] } = inject(MAT_DIALOG_DATA);
 
   loading = signal(false);
   readonly rolesRequiringWarehouse = ROLES_REQUIRING_WAREHOUSE;
   readonly rolesWithoutWarehouse = ROLES_WITHOUT_WAREHOUSE;
 
   get roleOptions(): string[] {
-    return USER_ROLES.filter((r) => r !== this.data.user.role && r !== 'Administrator');
+    return USER_ROLES.filter((r) => r !== this.data.user.role);
   }
   get warehouses(): WarehouseDropdown[] {
     return this.data.warehouses ?? [];
@@ -46,7 +45,6 @@ export class EditUserRoleDialog implements OnInit {
   });
 
   ngOnInit(): void {
-    // warehouse field starts disabled — only enabled when role requires it
     this.form.get('warehouseId')?.disable();
 
     this.form.get('role')?.valueChanges.subscribe((role) => {
@@ -56,7 +54,6 @@ export class EditUserRoleDialog implements OnInit {
       const newRoleIsNonWarehouse = role ? this.rolesWithoutWarehouse.includes(role) : false;
 
       if (newRoleRequiresWarehouse && !currentUserIsWarehouseRole) {
-        // Viewer/Admin → Manager/StockKeeper: show and require warehouse
         warehouseControl?.enable();
         warehouseControl?.setValidators(Validators.required);
         warehouseControl?.setValue(null);
@@ -64,8 +61,6 @@ export class EditUserRoleDialog implements OnInit {
         newRoleIsNonWarehouse ||
         (newRoleRequiresWarehouse && currentUserIsWarehouseRole)
       ) {
-        // Manager/StockKeeper → Viewer/Admin: hide warehouse
-        // Manager ↔ StockKeeper: keep existing, no input needed
         warehouseControl?.disable();
         warehouseControl?.clearValidators();
         warehouseControl?.setValue(null);
@@ -94,8 +89,7 @@ export class EditUserRoleDialog implements OnInit {
     this.loading.set(true);
     const raw = this.form.getRawValue();
 
-    this.service
-      .updateUserRole(this.data.user.id, {
+    this.service.updateUserRole(this.data.user.id, {
         role: raw.role!,
         warehouseId: raw.warehouseId ?? null,
       })
@@ -108,8 +102,7 @@ export class EditUserRoleDialog implements OnInit {
           } else {
             this.toast.error(res.message ?? 'Failed to update role.');
           }
-        },
-        error: () => this.toast.error('Request failed. Please try again.'),
+        }
       });
   }
 }

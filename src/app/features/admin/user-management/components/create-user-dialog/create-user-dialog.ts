@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { finalize } from 'rxjs';
-import { DialogComponent } from '../../../../../shared/components/dialog/dialog';
+import { DialogComponent, DialogConfig } from '../../../../../shared/components/dialog/dialog';
 import { InputComponent } from '../../../../../shared/components/input/input';
 import { ToastService } from '../../../../../core/services/toast-service';
 import { UserManagementService } from '../../services/user-management-service';
@@ -29,22 +29,14 @@ export class CreateUserDialog implements OnInit {
   private readonly service = inject(UserManagementService);
   private readonly toast = inject(ToastService);
   readonly dialogRef = inject(MatDialogRef<CreateUserDialog>);
-  readonly data: { config: any; warehouses: WarehouseDropdown[] } = inject(MAT_DIALOG_DATA);
+  readonly data: { config: DialogConfig; warehouses: WarehouseDropdown[] } = inject(MAT_DIALOG_DATA);
 
   loading = signal(false);
-  readonly roleOptions = USER_ROLES.filter((r) => r !== 'Administrator');
+  readonly roleOptions = USER_ROLES
   readonly rolesRequiringWarehouse = ROLES_REQUIRING_WAREHOUSE;
 
   form = this.fb.group({
-    fullName: [
-      '',
-      [
-        Validators.required,
-        Validators.minLength(2),
-        Validators.maxLength(150),
-        Validators.pattern(/^(?=.*[A-Za-z])[A-Za-z\s\-'.]+$/),
-      ],
-    ],
+    fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150), Validators.pattern(/^[a-zA-Z\s]+$/)]],
     email: ['', [Validators.required, emailValidator()]],
     password: ['', [Validators.required, passwordValidator()]],
     role: ['', Validators.required],
@@ -83,7 +75,7 @@ export class CreateUserDialog implements OnInit {
     if (ctrl.hasError('minlength')) return 'Full name must be at least 2 characters.';
     if (ctrl.hasError('maxlength')) return 'Full name must not exceed 150 characters.';
     if (ctrl.hasError('pattern'))
-      return 'Full name can only contain letters, spaces, hyphens, apostrophes, and periods.';
+      return 'Full name can only contain letters, spaces';
     return '';
   }
 
@@ -103,8 +95,7 @@ export class CreateUserDialog implements OnInit {
     this.loading.set(true);
     const raw = this.form.getRawValue();
 
-    this.service
-      .createUser({
+    this.service.createUser({
         fullName: raw.fullName!,
         email: raw.email!,
         password: raw.password!,
@@ -120,8 +111,7 @@ export class CreateUserDialog implements OnInit {
           } else {
             this.toast.error(res.message ?? 'Failed to create user.');
           }
-        },
-        error: () => this.toast.error('Request failed. Please try again.'),
+        }
       });
   }
 }
